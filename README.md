@@ -1,4 +1,4 @@
-# Tic tac toe en React + Prolog
+# Nonograma en React + Prolog
 
 Implementación de un tic-tac-toe interactivo, usando React del lado del cliente, y Prolog del lado del servidor.
 
