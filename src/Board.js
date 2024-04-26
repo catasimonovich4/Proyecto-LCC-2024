@@ -2,7 +2,7 @@ import React from 'react';
 import Square from './Square';
 import Clue from './Clue';
 
-function Board({ grid, rowsClues, colsClues, onClick }) {
+function Board({ grid, rowsClues, colsClues, onMouseDown, onMouseUp, onMouseEnter, onContextMenu }) {
     const numOfRows = grid.length;
     const numOfCols = grid[0].length;
     return (
@@ -39,7 +39,7 @@ function Board({ grid, rowsClues, colsClues, onClick }) {
                         <Clue clue={clue} key={i} />
                     )}
                 </div>
-                <div className="board"
+                <div className="board" onMouseLeave={onMouseUp}
                     style={{
                         gridTemplateRows: `repeat(${numOfRows}, 40px)`,
                         gridTemplateColumns: `repeat(${numOfCols}, 40px)`
@@ -48,7 +48,10 @@ function Board({ grid, rowsClues, colsClues, onClick }) {
                         row.map((cell, j) =>
                             <Square
                                 value={cell}
-                                onClick={() => onClick(i, j)}
+                                onMouseDown={(e) => onMouseDown(e, i, j)}
+                                onMouseUp={onMouseUp}
+                                onMouseEnter={() => onMouseEnter(i, j)}
+                                onContextMenu={(e) => onContextMenu(e, i, j)}
                                 key={i + j}
                             />
                         )
