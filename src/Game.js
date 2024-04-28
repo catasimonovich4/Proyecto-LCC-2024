@@ -54,7 +54,12 @@ function Game() {
     const queryS = `put("${content}", [${row},${column}], ${rowsCluesS}, ${colsCluesS}, ${squaresS}, ResGrid, RowSat, ColSat)`; // queryS = put("#",[0,1],[], [],[["X",_,_,_,_],["X",_,"X",_,_],["X",_,_,_,_],["#","#","#",_,_],[_,_,"#","#","#"]], GrillaRes, FilaSat, ColSat)
     setWaiting(true);
     pengine.query(queryS, (success, response) => {
-      if (success) { setGrid(response['ResGrid']); }
+      if (success) {
+        setGrid(response['ResGrid']);
+        if (response['RowSat'] == 1 || response['ColSat'] == 1) {
+          console.log("[" + row + ", " + column + "]: " + response['RowSat'] + "  " + response['ColSat']);
+        }
+      }
       setWaiting(false);
     });
   }
