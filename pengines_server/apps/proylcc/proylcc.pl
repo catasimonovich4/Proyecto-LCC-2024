@@ -19,7 +19,7 @@ replace(X, XIndex, Y, [Xi|Xs], [Xi|XsY]):-
 % put(+Content, +Pos, +RowsClues, +ColsClues, +Grid, -NewGrid, -RowSat, -ColSat).
 %
 
-put(Content, [RowN, ColN], _RowsClues, _ColsClues, Grid, NewGrid, 0, 0):-
+put(Content, [RowN, ColN], RowsClues, ColsClues, Grid, NewGrid, RowSat, ColSat):-
 	% NewGrid is the result of replacing the row Row in position RowN of Grid by a new row NewRow (not yet instantiated).
 	replace(Row, RowN, NewRow, Grid, NewGrid),
 
@@ -28,25 +28,83 @@ put(Content, [RowN, ColN], _RowsClues, _ColsClues, Grid, NewGrid, 0, 0):-
 	% Otherwise (;)
 	% NewRow is the result of replacing the cell in position ColN of Row by Content (no matter its content: _Cell).			
 	(replace(Cell, ColN, _, Row, NewRow), Cell == Content;
-	replace(_Cell, ColN, Content, Row, NewRow)).
+	replace(_Cell, ColN, Content, Row, NewRow)),
+	
+	getColumn(NewGrid, ColN, Column),
+	getListElement(RowsClues, RowN, RowClue),
+	getListElement(ColsClues, ColN, ColClue),
+
+	(
+		validClue(RowClue, NewRow), RowSat = 1;
+		RowSat = 0
+	),
+	(
+		validClue(ColClue, Column), ColSat = 1;
+		ColSat = 0
+	).
 
 
-getListElement(0, [X | _], X) :- !.
-
-getListElement(Idx, [_ | Xs], Element) :-
+getListElement([X | _], 0, X) :- !.
+getListElement([_ | Xs], Idx, Element) :-
 	K is Idx-1,
-	getListElement(K, Xs, Element).
+	getListElement(Xs, K, Element).
 
-getRow(RowIdx, Grid, Row) :- getListElement(RowIdx, Grid, Row).
+getRow(Grid, RowIdx, Row) :- getListElement(Grid, RowIdx, Row).
 
-getColumn(ColIdx, Grid, Col) :-
-	findall(X, (member(Row, Grid), getListElement(ColIdx, Row, X)), Col),
+getColumn(Grid, ColIdx, Col) :-
+	findall(X, (member(Row, Grid), getListElement(Row, ColIdx, X)), Col),
 	Col \= [].
 
-
-%   validClue(+Clue, +List).
+% countConsecutiveSymbols(+List, +Symbol, -Count :int)
 %
-%   +Clue represents the Clues for the current row/column.
-%   +List is a simple List representing a Row or a Column. see GetRow/3, GetColumn/3.
-validClue(0, ["X" | Xs]).
-validClue(Clue, List).
+%    Given +List and +Symbol, it counts from the start how many
+%    consecutive symbols there are and stores it in -Count.
+%
+%    For example: ?- countConsecutiveSymbols([1,1,2,3], 1, C, S).
+%    C = 2.
+
+countConsecutiveSymbols([], _, 0) :- !.
+countConsecutiveSymbols([X | _], Symbol, 0) :- X \== Symbol, !.
+countConsecutiveSymbols([X | Xs], Symbol, Count) :- 
+	X == Symbol,
+	countConsecutiveSymbols(Xs, Symbol, SubCount),
+	Count is SubCount+1.
+
+% skipConsecutiveSymbols(+List, +Symbol, -Count :int, -Sublist)
+%
+%    Given +List and +Symbol, it counts from the start how many
+%    consecutive symbols there are and stores it in -Count, while -Sublist
+%    has the remaining elements skipping the repeated symbols.
+%
+%    For example: ?- skipConsecutiveSymbols([1,1,2,3], 1, C, S).
+%    C = 2, S=[2,3].
+
+skipConsecutiveSymbols([], _, 0, []) :- !.
+skipConsecutiveSymbols([X | Xs], Symbol, 0, [X | Xs]) :- X \== Symbol, !.
+skipConsecutiveSymbols([X | Xs], Symbol, Count, Sublist) :- 
+	X == Symbol,
+	skipConsecutiveSymbols(Xs, Symbol, SubCount, Sublist),
+	Count is SubCount+1.
+
+% lineToClue(+Line :list, -Clue :list)
+%
+%    +Line, represents a Row or a Column.
+%    -Clue, is a Clue that represents the line.
+
+lineToClue([], []) :- !.
+lineToClue([X | Xs], Clue) :- 
+	X \== "#",
+	lineToClue(Xs, Clue),
+	!.
+lineToClue(List, [ Count | Counts ]) :- 
+	List = [ X | _ ],
+	X == "#",
+	skipConsecutiveSymbols(List, "#", Count, SubClue),
+	lineToClue(SubClue, Counts).
+
+%   validClue(+Clue, +Line).
+%
+%   +Clue represents the Clue for the current row/column, list of ints.
+%   +Line is a simple List representing a Row or a Column. see getRow/3, getColumn/3.
+
+validClue(Clue, Line) :- lineToClue(Line, Clue).
