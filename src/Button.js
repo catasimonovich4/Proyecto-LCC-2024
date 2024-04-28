@@ -1,8 +1,9 @@
 
 function Button({ onClick }) {
     return ( 
-            <label className="switch slider">
+            <label class="switch" className="switch slider">
                 <input type="checkbox" onClick={onClick}/>
+                <span class="slider"></span>
             </label>
          );
 }
