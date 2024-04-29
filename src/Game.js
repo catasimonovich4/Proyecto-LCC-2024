@@ -71,17 +71,15 @@ function Game() {
         let rowSatisfied = response['RowSat'];
         let colSatisfied = response['ColSat'];
 
-        if (rowSatisfied != rowsCluesStates[row]) {
+        if (rowSatisfied !== rowsCluesStates[row]) {
           const temp = [...rowsCluesStates];
           temp[row] = rowSatisfied;
           setRowsCluesStates(temp);
-          console.log("new ROW active: " + row);
         }
-        if (colSatisfied != colsCluesStates[column]) {
+        if (colSatisfied !== colsCluesStates[column]) {
           const temp = [...colsCluesStates];
           temp[column] = colSatisfied;
           setColsCluesStates(temp);
-          console.log("new COL active: " + row);
         }
       }
       setWaiting(false);
