@@ -51,6 +51,10 @@ body {
   padding: 3px;
 }
 
+.clue-active {
+  background-color: gold;
+}
+
 .clue div {
   margin: 2px
 }

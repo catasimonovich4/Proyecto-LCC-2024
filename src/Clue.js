@@ -1,8 +1,12 @@
 import React from 'react';
 
-function Clue({ clue }) {
+function Clue({ clue, clueState }) {
+
+    let stateModifier = clueState ? "clue-active" : "clue-inactive";
+
+    let className = "clue " + stateModifier;
     return (
-        <div className={"clue"} >
+        <div className={className} >
             {clue.map((num, i) =>
                 <div key={i}>
                     {num}

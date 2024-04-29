@@ -13,11 +13,15 @@ function Game() {
   const [colsClues, setColsClues] = useState(null);
   const [waiting, setWaiting] = useState(false);
   const [drawState, setDrawState] = useState(false);
-
+  
   const [isMouseDown, setIsMouseDown] = useState(false);
-
+  
   const NUMBER_ROWS_REF = useRef(0);
+  //const NUMBER_COLS_REF = useRef(0);
   const visitedSquaresRef = useRef(new Set());
+  
+  const [rowsCluesStates, setRowsCluesStates] = useState(null);
+  const [colsCluesStates, setColsCluesStates] = useState(null);
 
   
   useEffect(() => {
@@ -32,10 +36,18 @@ function Game() {
     const queryS = 'init(RowClues, ColumClues, Grid)';
     pengine.query(queryS, (success, response) => {
       if (success) {
+        let amountRows = response['RowClues'].length;
+        let amountCols = response['ColumClues'].length;
+
         setGrid(response['Grid']);
         setRowsClues(response['RowClues']);
         setColsClues(response['ColumClues']);
-        NUMBER_ROWS_REF.content = response['Grid'].length;
+
+        NUMBER_ROWS_REF.content = amountRows;
+        //NUMBER_COLS_REF.content = amountCols;
+        
+        setRowsCluesStates(Array(amountRows).fill(0));
+        setColsCluesStates(Array(amountCols).fill(0));
       }
     });
   }
@@ -56,8 +68,20 @@ function Game() {
     pengine.query(queryS, (success, response) => {
       if (success) {
         setGrid(response['ResGrid']);
-        if (response['RowSat'] == 1 || response['ColSat'] == 1) {
-          console.log("[" + row + ", " + column + "]: " + response['RowSat'] + "  " + response['ColSat']);
+        let rowSatisfied = response['RowSat'];
+        let colSatisfied = response['ColSat'];
+
+        if (rowSatisfied != rowsCluesStates[row]) {
+          const temp = [...rowsCluesStates];
+          temp[row] = rowSatisfied;
+          setRowsCluesStates(temp);
+          console.log("new ROW active: " + row);
+        }
+        if (colSatisfied != colsCluesStates[column]) {
+          const temp = [...colsCluesStates];
+          temp[column] = colSatisfied;
+          setColsCluesStates(temp);
+          console.log("new COL active: " + row);
         }
       }
       setWaiting(false);
@@ -113,6 +137,8 @@ function Game() {
         grid={grid}
         rowsClues={rowsClues}
         colsClues={colsClues}
+        rowsCluesStates={rowsCluesStates}
+        colsCluesStates={colsCluesStates}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseEnter={handleMouseEnter}
