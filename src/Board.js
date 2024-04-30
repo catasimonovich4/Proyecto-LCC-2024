@@ -47,7 +47,7 @@ function Board({ grid, rowsClues, colsClues, rowsCluesStates, colsCluesStates, o
                     {grid.map((row, i) =>
                         row.map((cell, j) =>
                             <Square
-                                value={cell}
+                                stateValue={cell}
                                 onMouseDown={(e) => onMouseDown(e, i, j)}
                                 onMouseUp={onMouseUp}
                                 onMouseEnter={() => onMouseEnter(i, j)}

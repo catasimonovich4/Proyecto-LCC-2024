@@ -1,7 +1,7 @@
 import React from 'react';
 
-function Square({ value, onMouseDown, onMouseUp, onMouseEnter, onContextMenu }) {
-    let stateModifier = value === '#' ? " square-painted" : value==='X' ? " square-cross" : "";
+function Square({ stateValue, onMouseDown, onMouseUp, onMouseEnter, onContextMenu }) {
+    let stateModifier = stateValue === '#' ? " square-painted" : stateValue==='X' ? " square-cross" : "";
     const className = "square" + stateModifier;
     
     return (

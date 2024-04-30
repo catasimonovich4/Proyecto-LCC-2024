@@ -22,28 +22,33 @@ replace(X, XIndex, Y, [Xi|Xs], [Xi|XsY]):-
 put(Content, [RowN, ColN], RowsClues, ColsClues, Grid, NewGrid, RowSat, ColSat):-
 	% NewGrid is the result of replacing the row Row in position RowN of Grid by a new row NewRow (not yet instantiated).
 	replace(Row, RowN, NewRow, Grid, NewGrid),
-
+	
 	% NewRow is the result of replacing the cell Cell in position ColN of Row by _,
 	% if Cell matches Content (Cell is instantiated in the call to replace/5).	
 	% Otherwise (;)
 	% NewRow is the result of replacing the cell in position ColN of Row by Content (no matter its content: _Cell).			
 	(replace(Cell, ColN, _, Row, NewRow), Cell == Content;
 	replace(_Cell, ColN, Content, Row, NewRow)),
-	
+
 	getColumn(NewGrid, ColN, Column),
 	getListElement(RowsClues, RowN, RowClue),
 	getListElement(ColsClues, ColN, ColClue),
 
 	(
-		validClue(RowClue, NewRow), RowSat = 1;
-		RowSat = 0
+	validClue(RowClue, NewRow), RowSat = 1;
+	RowSat = 0
 	),
 	(
 		validClue(ColClue, Column), ColSat = 1;
 		ColSat = 0
 	).
+	
 
-
+/******************************************************************************** 
+ * getListElement(+List, +Idx, -Element).
+ * 
+ * Succeeds if the {Idx} element of {List} is equal to {Element}.
+*/
 getListElement([X | _], 0, X) :- !.
 getListElement([_ | Xs], Idx, Element) :-
 	K is Idx-1,
@@ -55,14 +60,11 @@ getColumn(Grid, ColIdx, Col) :-
 	findall(X, (member(Row, Grid), getListElement(Row, ColIdx, X)), Col),
 	Col \= [].
 
-% countConsecutiveSymbols(+List, +Symbol, -Count :int)
-%
-%    Given +List and +Symbol, it counts from the start how many
-%    consecutive symbols there are and stores it in -Count.
-%
-%    For example: ?- countConsecutiveSymbols([1,1,2,3], 1, C, S).
-%    C = 2.
-
+/******************************************************************************** 
+ * countConsecutiveSymbols(+List, +Symbol, -Count :int).
+ * 
+ * Succeeds if the first {Count} elements of {List} are equal to {Symbol}.
+*/
 countConsecutiveSymbols([], _, 0) :- !.
 countConsecutiveSymbols([X | _], Symbol, 0) :- X \== Symbol, !.
 countConsecutiveSymbols([X | Xs], Symbol, Count) :- 
@@ -70,15 +72,12 @@ countConsecutiveSymbols([X | Xs], Symbol, Count) :-
 	countConsecutiveSymbols(Xs, Symbol, SubCount),
 	Count is SubCount+1.
 
-% skipConsecutiveSymbols(+List, +Symbol, -Count :int, -Sublist)
-%
-%    Given +List and +Symbol, it counts from the start how many
-%    consecutive symbols there are and stores it in -Count, while -Sublist
-%    has the remaining elements skipping the repeated symbols.
-%
-%    For example: ?- skipConsecutiveSymbols([1,1,2,3], 1, C, S).
-%    C = 2, S=[2,3].
-
+/******************************************************************************** 
+ * skipConsecutiveSymbols(+List, +Symbol, -Count :int, -Sublist).
+ * 
+ * Succeeds if the first {Count} elements of {List} are equal to {Symbol},
+ * and the sublist containing the remaining {length(List)-Count} elements is equal to {Sublist}.
+*/
 skipConsecutiveSymbols([], _, 0, []) :- !.
 skipConsecutiveSymbols([X | Xs], Symbol, 0, [X | Xs]) :- X \== Symbol, !.
 skipConsecutiveSymbols([X | Xs], Symbol, Count, Sublist) :- 
@@ -86,11 +85,17 @@ skipConsecutiveSymbols([X | Xs], Symbol, Count, Sublist) :-
 	skipConsecutiveSymbols(Xs, Symbol, SubCount, Sublist),
 	Count is SubCount+1.
 
-% lineToClue(+Line :list, -Clue :list)
-%
-%    +Line, represents a Row or a Column.
-%    -Clue, is a Clue that represents the line.
 
+/******************************************************************************** 
+ * lineToClue(+Line :list, -Clue :list).
+ * 
+ * Succeeds if the {Line} representation is equal to the {Clue} representation.
+ * 
+ * @param Line is a list which contains "#" or anything else(_). @see getRow/3, getColumn/3.
+ * @param Clue is a list of ints representing a Line,
+ * 			   such that every int is the amount of consecutive "#"s
+ * 			   followed or preceded by any amount of other elements(_).
+*/
 lineToClue([], []) :- !.
 lineToClue([X | Xs], Clue) :- 
 	X \== "#",
@@ -102,9 +107,28 @@ lineToClue(List, [ Count | Counts ]) :-
 	skipConsecutiveSymbols(List, "#", Count, SubClue),
 	lineToClue(SubClue, Counts).
 
-%   validClue(+Clue, +Line).
-%
-%   +Clue represents the Clue for the current row/column, list of ints.
-%   +Line is a simple List representing a Row or a Column. see getRow/3, getColumn/3.
 
+/******************************************************************************** 
+ * validClue(+Clue, +Line).
+ * 
+ * Succeeds if the {Clue} representation is equal to the {Line} representation.
+ * 
+ * @param Line is a list which contains "#" or anything else(_). @see getRow/3, getColumn/3.
+ * @param Clue is a list of ints representing a Line,
+ * 			   such that every int is the amount of consecutive "#"s
+ * 			   followed or preceded by any amount of other elements(_).
+*/
 validClue(Clue, Line) :- lineToClue(Line, Clue).
+
+
+/******************************************************************************** 
+ * getClueStates(+Grid, +RowsClues, +ColsClues, -RowsCluesStates, -ColsCluesStates)
+ * 
+ * Succeeds if:
+ *     {RowsCluesStates} is the list of booleans which represents the satisfied rows    in {Grid}  and
+ *     {ColsCluesStates} is the list of booleans which represents the satisfied columns in {Grid}.
+ * the N row    in {grid} is satisfied if it is equivalent in its Clue representation to the N Clue of {RowsClues}, 
+ * the N column in {grid} is satisfied if it is equivalent in its Clue representation to the N Clue of {ColsClues}.
+ * @see validClue.
+*/
+% getClueStates(Grid, RowsClues, ColsClues, RowsCluesStates, ColsCluesStates). TO IMPLEMENT.

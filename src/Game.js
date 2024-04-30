@@ -36,13 +36,12 @@ function Game() {
     const queryS = 'init(RowClues, ColumClues, Grid)';
     pengine.query(queryS, (success, response) => {
       if (success) {
-        let amountRows = response['RowClues'].length;
-        let amountCols = response['ColumClues'].length;
-
         setGrid(response['Grid']);
         setRowsClues(response['RowClues']);
         setColsClues(response['ColumClues']);
-
+        
+        let amountRows = response['RowClues'].length;
+        let amountCols = response['ColumClues'].length;
         NUMBER_ROWS_REF.content = amountRows;
         //NUMBER_COLS_REF.content = amountCols;
         
@@ -88,9 +87,8 @@ function Game() {
 
 
   function handleMouseDown(e, row, column) {
-    // left mouse button.
     let squareId = row * NUMBER_ROWS_REF.content + column;
-    if (e.button === 0) {
+    if (e.button === 0) { // left mouse button.
       setIsMouseDown(true);
       
       let content = getDrawState();
@@ -105,8 +103,7 @@ function Game() {
   }
   
   function handleMouseUp(e) {
-    // left mouse button.
-    if (e.button === 0 || e.button === 2) {
+    if (e.button === 0 || e.button === 2) { // left mouse button.
       setIsMouseDown(false);
       visitedSquaresRef.current.clear();
     }
@@ -129,7 +126,7 @@ function Game() {
   }
 
 
-  const won = rowsCluesStates.every( (e) => e===1 );
+  const won = rowsCluesStates.every( (e) => e===1 ) && colsCluesStates.every( (e) => e===1 );
   const statusText = won ? "WOK!" : "Keep playing!";
   return (
     <div className="game">
