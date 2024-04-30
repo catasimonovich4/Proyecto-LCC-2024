@@ -1,13 +1,15 @@
 import React from 'react';
 
 function Square({ value, onMouseDown, onMouseUp, onMouseEnter, onContextMenu }) {
+    let stateModifier = value === '#' ? " square-painted" : value==='X' ? " square-cross" : "";
+    const className = "square" + stateModifier;
+    
     return (
-        <button className="square"
+        <button className={className}
             onMouseDown={onMouseDown}
             onMouseEnter={onMouseEnter}
             onMouseUp={onMouseUp}
             onContextMenu={onContextMenu}>
-            {value !== '_' ? value : null}
         </button>
     );
 }

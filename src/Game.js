@@ -128,7 +128,9 @@ function Game() {
     return null;
   }
 
-  const statusText = 'Keep playing!';
+
+  const won = rowsCluesStates.every( (e) => e===1 );
+  const statusText = won ? "WOK!" : "Keep playing!";
   return (
     <div className="game">
       <Board

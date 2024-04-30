@@ -19,6 +19,21 @@ body {
   text-align: center;
 }
 
+.square-painted {
+  background-color: black;
+}
+
+.square-cross::before {
+  content: "X";
+  font-weight: bold;
+  font-size: 20px;
+  text-align: center;
+  left: 4px;
+  bottom: 6px;
+  background-color: white;
+
+}
+
 .board {
   display: grid;
   position: relative;
@@ -150,3 +165,6 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
+* {
+  user-select: none;
+}
