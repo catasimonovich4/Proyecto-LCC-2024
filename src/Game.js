@@ -145,7 +145,7 @@ function Game() {
         {statusText}
       </div>
       <div className="switch-button">
-        <Button value="#" onClick={() => setDrawState(!drawState)}></Button>
+        <Button currentState={drawState} onClick={() => setDrawState(!drawState)}></Button>
       </div>
     </div>
   );

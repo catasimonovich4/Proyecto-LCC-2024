@@ -1,6 +1,6 @@
 
-function Button({ onClick }) {
-    return ( 
+function Button({ currentState, onClick }) {
+    return (
             <label className="switch slider">
                 <input type="checkbox" onClick={onClick}/>
                 <span className="slider"></span>
