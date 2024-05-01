@@ -120,7 +120,7 @@ function Game() {
 
 
   const won = rowsCluesStates.every( (e) => e===1 ) && colsCluesStates.every( (e) => e===1 );
-  const statusText = won ? "WOK!" : "Keep playing!";
+  const statusText = won ? "YOU WON!" : "Keep playing!";
   return (
     <div className="game">
       <h1>Nonograma</h1>
