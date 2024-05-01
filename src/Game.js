@@ -130,6 +130,7 @@ function Game() {
   const statusText = won ? "WOK!" : "Keep playing!";
   return (
     <div className="game">
+      <h1>Nonograma</h1>
       <Board
         grid={grid}
         rowsClues={rowsClues}

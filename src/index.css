@@ -3,9 +3,14 @@
 }
 
 body {
+  background-color: #464E47;
   font-family: sans-serif;
   margin: 20px;
   padding: 0;
+}
+
+h1 {
+  color: white;
 }
 
 .square {
@@ -46,6 +51,7 @@ body {
 .vertical {
   display: flex;
   flex-direction: column;
+  margin-right: 65px;
 }
 
 .rowClues {
@@ -81,30 +87,30 @@ body {
 .game {
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .game-info {
   position: relative;
   display: inline-block;
-  margin-left: 100px;
-  margin-top: 5px;
-  margin-bottom: 5px;
+  margin-top: 15px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: white;
 }
 
 .switch-button {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  align-items: center;
 } 
 
 /* The switch - the box around the slider */
 .switch {
   position: relative;
-  display: inline-block;
   width: 60px;
   height: 34px;
-  margin-top: 310px;
-  margin-left: 140px;
+
 }
 
 /* Hide default HTML checkbox */
@@ -116,7 +122,7 @@ body {
 
 /* The slider */
 .slider {
-  position: absolute;
+  /* position: absolute; */
   cursor: pointer;
   top: 0;
   left: 0;
@@ -129,31 +135,29 @@ body {
 
 .slider:before {
   position: absolute;
-  content: "X";
+  content: "";
   font-weight: bold;
   font-size: 20px;
   text-align: center;
   height: 23px;
-  width: 26px;
+  width: 24px;
   left: 4px;
   bottom: 6px;
-  background-color: white;
+  background-color: black; 
   -webkit-transition: .4s;
   transition: .4s;
 }
 
 input:checked + .slider {
-  background-color: #2196F3;
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
+  background-color: #ccc;
 }
 
 input:checked + .slider:before {
   -webkit-transform: translateX(26px);
   -ms-transform: translateX(26px);
   transform: translateX(26px);
+  background-color: white;
+  content: "X";
 }
 
 /* Rounded sliders */
