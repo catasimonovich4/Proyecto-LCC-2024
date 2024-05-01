@@ -3,7 +3,7 @@
 }
 
 body {
-  background-color: #464E47;
+  background-color: #878E88;
   font-family: sans-serif;
   margin: 20px;
   padding: 0;
@@ -15,7 +15,7 @@ h1 {
 
 .square {
   background: #fff;
-  border: 1px solid #999;
+  border: 2px solid #999;
   font-size: 24px;
   font-weight: bold;
   margin-right: -1px;
@@ -36,7 +36,6 @@ h1 {
   left: 4px;
   bottom: 6px;
   background-color: white;
-
 }
 
 .board {
@@ -105,67 +104,57 @@ h1 {
   align-items: center;
 } 
 
-/* The switch - the box around the slider */
-.switch {
+.checkbox-wrapper-22 .switch {
+  display: inline-block;
+  height: 34px;
   position: relative;
   width: 60px;
-  height: 34px;
-
 }
 
-/* Hide default HTML checkbox */
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+.checkbox-wrapper-22 .switch input {
+  display:none;
 }
 
-/* The slider */
-.slider {
-  /* position: absolute; */
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
+.checkbox-wrapper-22 .slider {
+  background-color: #ccc;
   bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-.slider:before {
+  cursor: pointer;
+  left: 0;
   position: absolute;
-  content: "";
-  font-weight: bold;
-  font-size: 20px;
-  text-align: center;
-  height: 23px;
-  width: 24px;
-  left: 4px;
-  bottom: 6px;
-  background-color: black; 
-  -webkit-transition: .4s;
+  right: 0;
+  top: 0;
   transition: .4s;
 }
 
-input:checked + .slider {
+.checkbox-wrapper-22 .slider:before {
+  background-color: black;
+  bottom: 4px;
+  content: "";
+  font-size: 23px;
+  text-align: center;
+  height: 26px;
+  left: 4px;
+  position: absolute;
+  /* transition: .4s; */
+  width: 26px;
+}
+
+.checkbox-wrapper-22 input:checked + .slider {
   background-color: #ccc;
 }
 
-input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
+.checkbox-wrapper-22 input:checked + .slider:before {
   transform: translateX(26px);
-  background-color: white;
   content: "X";
+  text-align: center;
+  background-color: white;
 }
 
-/* Rounded sliders */
-.slider.round {
+.checkbox-wrapper-22 .slider.round {
   border-radius: 34px;
 }
 
-.slider.round:before {
+.checkbox-wrapper-22 .slider.round:before {
   border-radius: 50%;
 }
 
