@@ -85,8 +85,8 @@ function Game() {
     });
   }
 
-
   function handleMouseDown(e, row, column) {
+    e.preventDefault();
     let squareId = row * NUMBER_ROWS_REF.content + column;
     if (e.button === 0) { // left mouse button.
       setIsMouseDown(true);
@@ -103,6 +103,7 @@ function Game() {
   }
   
   function handleMouseUp(e) {
+    e.preventDefault();
     if (e.button === 0 || e.button === 2) { // left mouse button.
       setIsMouseDown(false);
       visitedSquaresRef.current.clear();
@@ -120,7 +121,6 @@ function Game() {
 
   function handleRightClick(e) { e.preventDefault(); }
   
-
   if (!grid) {
     return null;
   }
@@ -146,7 +146,7 @@ function Game() {
         {statusText}
       </div>
       <div className="switch-button">
-        <Button value="#" onClick={() => setDrawState(!drawState)}></Button>
+        <Button currentState={drawState} onClick={() => setDrawState(!drawState)}></Button>
       </div>
     </div>
   );

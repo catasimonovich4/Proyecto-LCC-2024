@@ -157,7 +157,3 @@ h1 {
 .checkbox-wrapper-22 .slider.round:before {
   border-radius: 50%;
 }
-
-* {
-  user-select: none;
-}
