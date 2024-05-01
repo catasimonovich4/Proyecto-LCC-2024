@@ -33,15 +33,8 @@ put(Content, [RowN, ColN], RowsClues, ColsClues, Grid, NewGrid, RowSat, ColSat):
 	getColumn(NewGrid, ColN, Column),
 	getListElement(RowsClues, RowN, RowClue),
 	getListElement(ColsClues, ColN, ColClue),
-
-	(
-	lineToClue(NewRow, RowClue), RowSat = 1;
-	RowSat = 0
-	),
-	(
-		lineToClue(Column, ColClue), ColSat = 1;
-		ColSat = 0
-	).
+	(lineToClue(NewRow, RowClue) -> RowSat = 1; RowSat = 0),
+	(lineToClue(Column, ColClue) -> ColSat = 1; ColSat = 0).
 	
 
 /******************************************************************************** 
@@ -124,29 +117,21 @@ lineToClue(List, [ Count | Counts ]) :-
 getClueStates(Grid, RowsClues, ColumnsClues, RowsCluesStates, ColumnsCluesStates) :-
 	getAmountRows(Grid, AmountRows),
 	getAmountColumns(Grid, AmountColumns),
+	R is AmountRows-1,
+	C is AmountColumns-1,
 	findall(RowSatisfied,
 		(
-			between(0, AmountRows, RowIdx),
+			between(0, R, RowIdx),
 			getRow(Grid, RowIdx, Row),
 			getListElement(RowsClues, RowIdx, RowClue),
-			(
-				(lineToClue(Row, RowClue),
-			     RowSatisfied = 1)
-				;
-				RowSatisfied = 0
-			)
+			(lineToClue(Row, RowClue) -> RowSatisfied = 1 ; RowSatisfied = 0)
 		), RowsCluesStates
 	),
 	findall(ColumnSatisfied,
 		(
-			between(0, AmountColumns, ColumnIdx),
+			between(0, C, ColumnIdx),
 			getColumn(Grid, ColumnIdx, Column),
 			getListElement(ColumnsClues, ColumnIdx, ColumnClue),
-			(
-				(lineToClue(Column, ColumnClue),
-			     ColumnSatisfied = 1)
-				;
-				ColumnSatisfied = 0
-			)
+			(lineToClue(Column, ColumnClue) -> ColumnSatisfied = 1 ; ColumnSatisfied = 0)
 		), ColumnsCluesStates
 	).

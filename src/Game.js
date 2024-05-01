@@ -31,30 +31,17 @@ function Game() {
   
   function handleServerReady(instance) {
     pengine = instance;
-    const queryS = 'init(RowClues, ColumClues, Grid), getClueStates(Grid, RowClues, ColumClues, RowsCluesStates, ColumnsCluesStates)';
+    const queryS = 'init(RowClues, ColumnClues, Grid), getClueStates(Grid, RowClues, ColumnClues, RowsCluesStates, ColumnsCluesStates)';
     
     pengine.query(queryS, (success, response) => {
       if (success) {
         setGrid(response['Grid']);
         setRowsClues(response['RowClues']);
-        setColsClues(response['ColumClues']);
+        setColsClues(response['ColumnClues']);
         setRowsCluesStates(response['RowsCluesStates']);
         setColsCluesStates(response['ColumnsCluesStates']);
       }
     });
-
-    const queryTest = `getListElement([1,2,3], [0], E)`;
-    console.log("A");
-    pengine.query(queryTest, (s,r) =>
-    {
-      console.log(s);
-      if (s) {
-        console.log(r["E"]);
-      } else {
-        console.log("ERR");
-      }
-    })
-    console.log("B");
   }
   
   // must rename.
@@ -77,14 +64,14 @@ function Game() {
         let colSatisfied = response['ColSat'];
 
         if (rowSatisfied !== rowsCluesStates[row]) {
-          const temp = [...rowsCluesStates];
-          temp[row] = rowSatisfied;
-          setRowsCluesStates(temp);
+          const rowClues = [...rowsCluesStates];
+          rowClues[row] = rowSatisfied;
+          setRowsCluesStates(rowClues);
         }
         if (colSatisfied !== colsCluesStates[column]) {
-          const temp = [...colsCluesStates];
-          temp[column] = colSatisfied;
-          setColsCluesStates(temp);
+          const columnClues = [...colsCluesStates];
+          columnClues[column] = colSatisfied;
+          setColsCluesStates(columnClues);
         }
       }
       setWaiting(false);
