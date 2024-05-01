@@ -15,9 +15,7 @@ function Game() {
   const [drawState, setDrawState] = useState(false);
   
   const [isMouseDown, setIsMouseDown] = useState(false);
-  
-  const NUMBER_ROWS_REF = useRef(0);
-  //const NUMBER_COLS_REF = useRef(0);
+
   const visitedSquaresRef = useRef(new Set());
   
   const [rowsCluesStates, setRowsCluesStates] = useState(null);
@@ -33,22 +31,30 @@ function Game() {
   
   function handleServerReady(instance) {
     pengine = instance;
-    const queryS = 'init(RowClues, ColumClues, Grid)';
+    const queryS = 'init(RowClues, ColumClues, Grid), getClueStates(Grid, RowClues, ColumClues, RowsCluesStates, ColumnsCluesStates)';
+    
     pengine.query(queryS, (success, response) => {
       if (success) {
         setGrid(response['Grid']);
         setRowsClues(response['RowClues']);
         setColsClues(response['ColumClues']);
-        
-        let amountRows = response['RowClues'].length;
-        let amountCols = response['ColumClues'].length;
-        NUMBER_ROWS_REF.content = amountRows;
-        //NUMBER_COLS_REF.content = amountCols;
-        
-        setRowsCluesStates(Array(amountRows).fill(0));
-        setColsCluesStates(Array(amountCols).fill(0));
+        setRowsCluesStates(response['RowsCluesStates']);
+        setColsCluesStates(response['ColumnsCluesStates']);
       }
     });
+
+    const queryTest = `getListElement([1,2,3], [0], E)`;
+    console.log("A");
+    pengine.query(queryTest, (s,r) =>
+    {
+      console.log(s);
+      if (s) {
+        console.log(r["E"]);
+      } else {
+        console.log("ERR");
+      }
+    })
+    console.log("B");
   }
   
   // must rename.
@@ -87,7 +93,7 @@ function Game() {
 
   function handleMouseDown(e, row, column) {
     e.preventDefault();
-    let squareId = row * NUMBER_ROWS_REF.content + column;
+    let squareId = `${row}${column}`;
     if (e.button === 0) { // left mouse button.
       setIsMouseDown(true);
       
@@ -111,14 +117,14 @@ function Game() {
   }
   
   function handleMouseEnter(row, column) {
-    let squareId = row * NUMBER_ROWS_REF.content + column;
+    let squareId = `${row}${column}`;
     if (isMouseDown && !visitedSquaresRef.current.has(squareId)) {
       let content = getDrawState();
       updateSquare(content, row, column);
       visitedSquaresRef.current.add(squareId);
     }
   }
-
+  
   function handleRightClick(e) { e.preventDefault(); }
   
   if (!grid) {

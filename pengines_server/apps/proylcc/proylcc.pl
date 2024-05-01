@@ -1,4 +1,4 @@
-:- module(proylcc, [put/8]).
+:- module(proylcc, [put/8, getClueStates/5]).
 :- use_module(library(lists)).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -35,11 +35,11 @@ put(Content, [RowN, ColN], RowsClues, ColsClues, Grid, NewGrid, RowSat, ColSat):
 	getListElement(ColsClues, ColN, ColClue),
 
 	(
-	validClue(RowClue, NewRow), RowSat = 1;
+	lineToClue(NewRow, RowClue), RowSat = 1;
 	RowSat = 0
 	),
 	(
-		validClue(ColClue, Column), ColSat = 1;
+		lineToClue(Column, ColClue), ColSat = 1;
 		ColSat = 0
 	).
 	
@@ -59,6 +59,10 @@ getRow(Grid, RowIdx, Row) :- getListElement(Grid, RowIdx, Row).
 getColumn(Grid, ColIdx, Col) :-
 	findall(X, (member(Row, Grid), getListElement(Row, ColIdx, X)), Col),
 	Col \= [].
+
+getAmountRows(Grid, AmoutRows) :- length(Grid, AmoutRows).
+
+getAmountColumns([X | _], AmountColumns) :- length(X, AmountColumns).
 
 /******************************************************************************** 
  * countConsecutiveSymbols(+List, +Symbol, -Count :int).
@@ -107,28 +111,42 @@ lineToClue(List, [ Count | Counts ]) :-
 	skipConsecutiveSymbols(List, "#", Count, SubClue),
 	lineToClue(SubClue, Counts).
 
-
 /******************************************************************************** 
- * validClue(+Clue, +Line).
- * 
- * Succeeds if the {Clue} representation is equal to the {Line} representation.
- * 
- * @param Line is a list which contains "#" or anything else(_). @see getRow/3, getColumn/3.
- * @param Clue is a list of ints representing a Line,
- * 			   such that every int is the amount of consecutive "#"s
- * 			   followed or preceded by any amount of other elements(_).
-*/
-validClue(Clue, Line) :- lineToClue(Line, Clue).
-
-
-/******************************************************************************** 
- * getClueStates(+Grid, +RowsClues, +ColsClues, -RowsCluesStates, -ColsCluesStates)
+ * getClueStates(+Grid, +RowsClues, +ColumnsClues, -RowsCluesStates, -ColumnsCluesStates)
  * 
  * Succeeds if:
- *     {RowsCluesStates} is the list of booleans which represents the satisfied rows    in {Grid}  and
- *     {ColsCluesStates} is the list of booleans which represents the satisfied columns in {Grid}.
+ *     {RowsCluesStates}    is the list of booleans which represents the satisfied rows    in {Grid}  and
+ *     {ColumnsCluesStates} is the list of booleans which represents the satisfied columns in {Grid}.
  * the N row    in {grid} is satisfied if it is equivalent in its Clue representation to the N Clue of {RowsClues}, 
- * the N column in {grid} is satisfied if it is equivalent in its Clue representation to the N Clue of {ColsClues}.
- * @see validClue.
+ * the N column in {grid} is satisfied if it is equivalent in its Clue representation to the N Clue of {ColumnsClues}.
+ * @see lineToClue.
 */
-% getClueStates(Grid, RowsClues, ColsClues, RowsCluesStates, ColsCluesStates). TO IMPLEMENT.
+getClueStates(Grid, RowsClues, ColumnsClues, RowsCluesStates, ColumnsCluesStates) :-
+	getAmountRows(Grid, AmountRows),
+	getAmountColumns(Grid, AmountColumns),
+	findall(RowSatisfied,
+		(
+			between(0, AmountRows, RowIdx),
+			getRow(Grid, RowIdx, Row),
+			getListElement(RowsClues, RowIdx, RowClue),
+			(
+				(lineToClue(Row, RowClue),
+			     RowSatisfied = 1)
+				;
+				RowSatisfied = 0
+			)
+		), RowsCluesStates
+	),
+	findall(ColumnSatisfied,
+		(
+			between(0, AmountColumns, ColumnIdx),
+			getColumn(Grid, ColumnIdx, Column),
+			getListElement(ColumnsClues, ColumnIdx, ColumnClue),
+			(
+				(lineToClue(Column, ColumnClue),
+			     ColumnSatisfied = 1)
+				;
+				ColumnSatisfied = 0
+			)
+		), ColumnsCluesStates
+	).
