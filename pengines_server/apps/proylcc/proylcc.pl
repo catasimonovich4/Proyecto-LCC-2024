@@ -89,7 +89,7 @@ skipConsecutiveSymbols([X | Xs], Symbol, Count, Sublist) :-
  * Succeeds if the {Line} representation is equal to the {Clue} representation.
  * 
  * @param Line is a list which contains "#" or anything else(_). @see getRow/3, getColumn/3.
- * @param Clue is a list of ints representing a Line,
+ * @param Clue is a list of ints(>0) representing a Line,
  * 			   such that every int is the amount of consecutive "#"s
  * 			   followed or preceded by any amount of other elements(_).
 */
