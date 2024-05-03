@@ -5,13 +5,22 @@ import Clue from './Clue';
 function Board({ grid, rowsClues, colsClues, rowsCluesStates, colsCluesStates, onMouseDown, onMouseUp, onMouseEnter, onContextMenu }) {
     const numOfRows = grid.length;
     const numOfCols = grid[0].length;
+
+
+    
+    let maxRowClue = Math.max(...rowsClues.map(clue => clue.length));
+    let maxColClue = Math.max(...colsClues.map(clue => clue.length));
+
+    let rowClueWidth = 16 + maxRowClue*13;
+    let colClueWidth = 15 + maxColClue*23;
+
     return (
         <div className="vertical">
             <div
                 className="colClues"
                 style={{
-                    gridTemplateRows: '60px',
-                    gridTemplateColumns: `60px repeat(${numOfCols}, 40px)`
+                    gridTemplateRows: `${colClueWidth}px`,
+                    gridTemplateColumns: `${rowClueWidth}px repeat(${numOfCols}, 40px)`
                     /*
                        60px  40px 40px 40px 40px 40px 40px 40px   (gridTemplateColumns)
                       ______ ____ ____ ____ ____ ____ ____ ____
@@ -31,7 +40,7 @@ function Board({ grid, rowsClues, colsClues, rowsCluesStates, colsCluesStates, o
                     className="rowClues"
                     style={{
                         gridTemplateRows: `repeat(${numOfRows}, 40px)`,
-                        gridTemplateColumns: '60px'
+                        gridTemplateColumns: `${rowClueWidth}px`
                         /* IDEM column clues above */
                     }}
                 >
