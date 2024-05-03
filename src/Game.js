@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import PengineClient from './PengineClient';
 import Board from './Board';
 import Button from './Button';
-import GameWon from './GameWon';
+
 let pengine;
 
 function Game() {
@@ -15,8 +15,6 @@ function Game() {
   const [drawState, setDrawState] = useState(false);
   
   const [isMouseDown, setIsMouseDown] = useState(false);
-
-  const [win, setWin] = useState(false);
 
   const visitedSquaresRef = useRef(new Set());
   
@@ -31,9 +29,10 @@ function Game() {
     PengineClient.init(handleServerReady);
   }, []);
   
-  function restartGame() {
-    setWin(false);
+  function handleServerReady(instance) {
+    pengine = instance;
     const queryS = 'init(RowClues, ColumnClues, Grid), getClueStates(Grid, RowClues, ColumnClues, RowsCluesStates, ColumnsCluesStates)';
+    
     pengine.query(queryS, (success, response) => {
       if (success) {
         setGrid(response['Grid']);
@@ -43,11 +42,6 @@ function Game() {
         setColsCluesStates(response['ColumnsCluesStates']);
       }
     });
-  }
-
-  function handleServerReady(instance) {
-    pengine = instance;
-    restartGame();
   }
   
   // must rename.
@@ -69,20 +63,16 @@ function Game() {
         let rowSatisfied = response['RowSat'];
         let colSatisfied = response['ColSat'];
 
-        const rowClues = [...rowsCluesStates];
-        const columnClues = [...colsCluesStates];
-
         if (rowSatisfied !== rowsCluesStates[row]) {
+          const rowClues = [...rowsCluesStates];
           rowClues[row] = rowSatisfied;
           setRowsCluesStates(rowClues);
         }
         if (colSatisfied !== colsCluesStates[column]) {
+          const columnClues = [...colsCluesStates];
           columnClues[column] = colSatisfied;
           setColsCluesStates(columnClues);
         }
-
-        setWin(rowClues.every( (e) => e===1 ) && columnClues.every( (e) => e===1 ));
-
       }
       setWaiting(false);
     });
@@ -123,11 +113,14 @@ function Game() {
   }
   
   function handleRightClick(e) { e.preventDefault(); }
-
+  
   if (!grid) {
     return null;
   }
 
+
+  const won = rowsCluesStates.every( (e) => e===1 ) && colsCluesStates.every( (e) => e===1 );
+  const statusText = won ? "YOU WON!" : "Keep playing!";
   return (
     <div className="game">
       <h1>Nonograma</h1>
@@ -142,17 +135,12 @@ function Game() {
         onMouseEnter={handleMouseEnter}
         onContextMenu={handleRightClick}
       />
-
+      <div className="game-info">
+        {statusText}
+      </div>
       <div className="switch-button">
         <Button currentState={drawState} onClick={() => setDrawState(!drawState)}></Button>
       </div>
-
-      <div className="game-info">
-        <div className="game-container">
-          {win ? <GameWon onButtonClick={restartGame} /> : (<div className="game-info"> "Keep playing!" </div>)}
-        </div>
-      </div>
-
     </div>
   );
 }
