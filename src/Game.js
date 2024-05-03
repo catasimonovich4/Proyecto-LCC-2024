@@ -15,12 +15,14 @@ function Game() {
   const [drawState, setDrawState] = useState(false);
   
   const [isMouseDown, setIsMouseDown] = useState(false);
-
+  
+  
   const visitedSquaresRef = useRef(new Set());
   
   const [rowsCluesStates, setRowsCluesStates] = useState(null);
   const [colsCluesStates, setColsCluesStates] = useState(null);
-
+  
+  const [userWon, setUserWon] = useState(false);
   
   useEffect(() => {
     // Creation of the pengine server instance.    
@@ -40,6 +42,7 @@ function Game() {
         setColsClues(response['ColumnClues']);
         setRowsCluesStates(response['RowsCluesStates']);
         setColsCluesStates(response['ColumnsCluesStates']);
+        setUserWon(response['RowsCluesStates'].every( (e) => e===1 ) && response['ColumnsCluesStates'].every( (e) => e===1 ));
       }
     });
   }
@@ -63,17 +66,23 @@ function Game() {
         let rowSatisfied = response['RowSat'];
         let colSatisfied = response['ColSat'];
 
+        const rowClues = [...rowsCluesStates];
+        const columnClues = [...colsCluesStates];
+
         if (rowSatisfied !== rowsCluesStates[row]) {
-          const rowClues = [...rowsCluesStates];
           rowClues[row] = rowSatisfied;
           setRowsCluesStates(rowClues);
         }
         if (colSatisfied !== colsCluesStates[column]) {
-          const columnClues = [...colsCluesStates];
           columnClues[column] = colSatisfied;
           setColsCluesStates(columnClues);
         }
+
+        let tempWon = rowClues.every( (e) => e===1 ) && columnClues.every( (e) => e===1 );
+        if (userWon !== tempWon)
+          setUserWon(tempWon);
       }
+
       setWaiting(false);
     });
   }
@@ -118,9 +127,7 @@ function Game() {
     return null;
   }
 
-
-  const won = rowsCluesStates.every( (e) => e===1 ) && colsCluesStates.every( (e) => e===1 );
-  const statusText = won ? "YOU WON!" : "Keep playing!";
+  const statusText = userWon ? "YOU WON!" : "Keep playing!";
   return (
     <div className="game">
       <h1>Nonograma</h1>
