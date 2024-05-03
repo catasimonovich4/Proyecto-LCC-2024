@@ -7,6 +7,8 @@ body {
   font-family: sans-serif;
   margin: 20px;
   padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1 {
@@ -50,7 +52,7 @@ h1 {
 .vertical {
   display: flex;
   flex-direction: column;
-  margin-right: 65px;
+ 
 }
 
 .rowClues {
@@ -95,7 +97,8 @@ h1 {
   margin-top: 15px;
   margin-bottom: 10px;
   font-weight: bold;
-  color: white;
+  font-size: 20px;
+  color: white; 
 }
 
 .switch-button {
