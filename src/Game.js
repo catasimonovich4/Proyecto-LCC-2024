@@ -29,12 +29,10 @@ function Game() {
     // This is executed just once, after the first render.    
     // The callback will run when the server is ready, and it stores the pengine instance in the pengine variable. 
     PengineClient.init(handleServerReady);
-    
   }, []);
   
-
-  function handleServerReady(instance) {
-    pengine = instance;
+  function restartGame() {
+    setWin(false);
     const queryS = 'init(RowClues, ColumnClues, Grid), getClueStates(Grid, RowClues, ColumnClues, RowsCluesStates, ColumnsCluesStates)';
     pengine.query(queryS, (success, response) => {
       if (success) {
@@ -43,23 +41,13 @@ function Game() {
         setColsClues(response['ColumnClues']);
         setRowsCluesStates(response['RowsCluesStates']);
         setColsCluesStates(response['ColumnsCluesStates']);
-        setWin(response['RowsCluesStates'].every( (e) => e===1 ) && response['ColumnsCluesStates'].every( (e) => e===1 ));
       }
     });
   }
 
-  function restartGame() {
-    const queryS = 'init(RowClues, ColumnClues, Grid), getClueStates(Grid, RowClues, ColumnClues, RowsCluesStates, ColumnsCluesStates)';
-    pengine.query(queryS, (success, response) => {
-      if (success) {
-        setGrid(response['Grid']);
-        setRowsClues(response['RowClues']);
-        setColsClues(response['ColumnClues']);
-        setRowsCluesStates(response['RowsCluesStates']);
-        setColsCluesStates(response['ColumnsCluesStates']);
-        setWin(response['RowsCluesStates'].every( (e) => e===1 ) && response['ColumnsCluesStates'].every( (e) => e===1 ));
-      }
-    });
+  function handleServerReady(instance) {
+    pengine = instance;
+    restartGame();
   }
   
   // must rename.
@@ -161,7 +149,7 @@ function Game() {
 
       <div className="game-info">
         <div className="game-container">
-          {win ? <GameWon onButtonClick={() => restartGame(pengine)} /> : (<div className="game-info"> "Keep playing!" </div>)}
+          {win ? <GameWon onButtonClick={restartGame} /> : (<div className="game-info"> "Keep playing!" </div>)}
         </div>
       </div>
 
