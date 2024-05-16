@@ -135,3 +135,71 @@ getClueStates(Grid, RowsClues, ColumnsClues, RowsCluesStates, ColumnsCluesStates
 			(lineToClue(Column, ColumnClue) -> ColumnSatisfied = 1 ; ColumnSatisfied = 0)
 		), ColumnsCluesStates
 	).
+
+getClueRestrictionLevel(Clue, Level) :-
+	sum_list(Clue, Sum),
+	length(Clue, Len),
+	Level is Sum + Len - 1.
+
+/******************************************************************************** 
+ * clueToLine(+Clue :list, -Line :list).
+ * 
+ * Line MUST BE A FIXED SIZE LIST.
+ * Succeeds if the {Clue} representation can unify to the {Line} representation.
+ * 
+ * 
+ * @param Line is a list which contains "#", "X" or anything else(_). @see getRow/3, getColumn/3.
+ * @param Clue is a list of ints(>0) representing a Line,
+ * 			   such that every int is the amount of consecutive "#"s
+ * 			   followed or preceded by any amount of other elements(_).
+ *
+ * @example
+ *   ?- clueToLine([2, 1, 3], Line).
+ *   INFINITE RECURSION.
+ * 
+ *   ?- clueToLine([1, 2], [_,_,_,_]).
+ *   true.
+ * 
+ *   ?- L=[_,_,_,_], clueToLine([1, 1], L).
+ * 	 L = ["X", "#", "X", "#"] ;
+ * 	 L = ["#", "X", "X", "#"] ;
+ * 	 L = ["#", "X", "#", "X"] ;
+ *   false.
+ * 
+ * safer to use solveLine/3.
+*/
+clueToLine([], []).
+clueToLine(Clue, [X | Xs]) :-
+	X = "X",
+	clueToLine(Clue, Xs).
+clueToLine([ Count | Counts ], List) :- 
+	List = [ "#" | _ ],
+	findall("#", between(1, Count, _), Hashtags), % Hashtags = lista con {Count} "#"s.
+	append(Hashtags, SubList, List),
+	(
+		SubList = [];
+		(SubList = [ First | _ ], First = "X")
+	),
+	clueToLine(Counts, SubList).
+
+/******************************************************************************** 
+ * solveLine(+Line, +Clue, -LineSolved).
+ * 
+ * Succeeds if
+ *  - {LineSolved} unifies with {Line},
+ *  - {LineSolved} only contains "#" and "X",
+ *  - {LineSolved} is a valid representation of {Clue}.
+ * 
+ * given a semi-completed {Line} and a {Clue}, {LineSolved} will give all
+ * possible solutions to the {Clue} with {Line} as the initial state.
+ * 
+ * @param Line is a list which contains "#", "X" or anything else(_).
+ * @param Clue is a list of ints(>0) representing a Line,
+ * 			   such that every int is the amount of consecutive "#"s
+ * 			   followed or preceded by any amount of other elements(_).
+ * @param LineSolved is a list containing "#" or "X", which corresponds to Clue representation.
+ *
+*/
+solveLine(Line, Clue, LineSolved) :- 
+	LineSolved = Line,
+	clueToLine(Clue, LineSolved).
