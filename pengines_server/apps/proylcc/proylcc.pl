@@ -1,5 +1,6 @@
 :- module(proylcc, [put/8, getClueStates/5]).
 :- use_module(library(lists)).
+:- use_module(library(clpfd)).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -41,7 +42,7 @@ put(Content, [RowN, ColN], RowsClues, ColsClues, Grid, NewGrid, RowSat, ColSat):
  * getListElement(+List, +Idx, -Element).
  * 
  * Succeeds if the {Idx} element of {List} is equal to {Element}.
-*/
+**/
 getListElement([X | _], 0, X) :- !.
 getListElement([_ | Xs], Idx, Element) :-
 	K is Idx-1,
@@ -49,32 +50,18 @@ getListElement([_ | Xs], Idx, Element) :-
 
 getRow(Grid, RowIdx, Row) :- getListElement(Grid, RowIdx, Row).
 
-getColumn(Grid, ColIdx, Col) :-
-	findall(X, (member(Row, Grid), getListElement(Row, ColIdx, X)), Col),
-	Col \= [].
+getColumn(Grid, ColIdx, Col) :- maplist(nth0(ColIdx), Grid, Col).
 
 getAmountRows(Grid, AmoutRows) :- length(Grid, AmoutRows).
 
 getAmountColumns([X | _], AmountColumns) :- length(X, AmountColumns).
 
 /******************************************************************************** 
- * countConsecutiveSymbols(+List, +Symbol, -Count :int).
- * 
- * Succeeds if the first {Count} elements of {List} are equal to {Symbol}.
-*/
-countConsecutiveSymbols([], _, 0) :- !.
-countConsecutiveSymbols([X | _], Symbol, 0) :- X \== Symbol, !.
-countConsecutiveSymbols([X | Xs], Symbol, Count) :- 
-	X == Symbol,
-	countConsecutiveSymbols(Xs, Symbol, SubCount),
-	Count is SubCount+1.
-
-/******************************************************************************** 
  * skipConsecutiveSymbols(+List, +Symbol, -Count :int, -Sublist).
  * 
  * Succeeds if the first {Count} elements of {List} are equal to {Symbol},
  * and the sublist containing the remaining {length(List)-Count} elements is equal to {Sublist}.
-*/
+**/
 skipConsecutiveSymbols([], _, 0, []) :- !.
 skipConsecutiveSymbols([X | Xs], Symbol, 0, [X | Xs]) :- X \== Symbol, !.
 skipConsecutiveSymbols([X | Xs], Symbol, Count, Sublist) :- 
@@ -92,7 +79,7 @@ skipConsecutiveSymbols([X | Xs], Symbol, Count, Sublist) :-
  * @param Clue is a list of ints(>0) representing a Line,
  * 			   such that every int is the amount of consecutive "#"s
  * 			   followed or preceded by any amount of other elements(_).
-*/
+**/
 lineToClue([], []) :- !.
 lineToClue([X | Xs], Clue) :- 
 	X \== "#",
@@ -113,7 +100,7 @@ lineToClue(List, [ Count | Counts ]) :-
  * the N row    in {grid} is satisfied if it is equivalent in its Clue representation to the N Clue of {RowsClues}, 
  * the N column in {grid} is satisfied if it is equivalent in its Clue representation to the N Clue of {ColumnsClues}.
  * @see lineToClue.
-*/
+**/
 getClueStates(Grid, RowsClues, ColumnsClues, RowsCluesStates, ColumnsCluesStates) :-
 	getAmountRows(Grid, AmountRows),
 	getAmountColumns(Grid, AmountColumns),
@@ -135,11 +122,6 @@ getClueStates(Grid, RowsClues, ColumnsClues, RowsCluesStates, ColumnsCluesStates
 			(lineToClue(Column, ColumnClue) -> ColumnSatisfied = 1 ; ColumnSatisfied = 0)
 		), ColumnsCluesStates
 	).
-
-getClueRestrictionLevel(Clue, Level) :-
-	sum_list(Clue, Sum),
-	length(Clue, Len),
-	Level is Sum + Len - 1.
 
 /******************************************************************************** 
  * clueToLine(+Clue :list, -Line :list).
@@ -167,7 +149,7 @@ getClueRestrictionLevel(Clue, Level) :-
  *   false.
  * 
  * safer to use solveLine/3.
-*/
+**/
 clueToLine([], []).
 clueToLine(Clue, [X | Xs]) :-
 	X = "X",
@@ -199,7 +181,180 @@ clueToLine([ Count | Counts ], List) :-
  * 			   followed or preceded by any amount of other elements(_).
  * @param LineSolved is a list containing "#" or "X", which corresponds to Clue representation.
  *
-*/
+**/
 solveLine(Line, Clue, LineSolved) :- 
 	LineSolved = Line,
 	clueToLine(Clue, LineSolved).
+
+/******************************************************************************** 
+ * sameElement(+Lists:List of lists, +Idx:int, -Element:any).
+ * 
+ * Succeeds if ALL Lists inside {Lists} have {Element} at index {Idx}.
+ *
+ * @param Lists is a lists of lists.
+ * @param Idx is the index to check in the Lists of lists, starts at 1. @see nth1/3.
+ * @param Element is the same element in all lists at the specified index.
+**/
+sameElement([First | Rest], Idx, Element) :-
+	nth1(Idx, First, Element),
+	forall(member(List, Rest), (nth1(Idx, List, E), Element == E)).
+
+/******************************************************************************** 
+ * commonElements(+Lists, -Result).
+ * 
+ * Succeeds if {Result} is the most restricted list which can unify with any list inside {Lists}.
+ *
+ * @param Lists is a lists of lists.
+ * @param Result is the most restricted list which can unify with any list inside {Lists}.
+ *
+ * @example
+    ?- commonElements([[1, 2, 3], [1, 2, 3], [1, 2, 3]], Result1).
+    Result1 = [1, 2, 3].
+    
+    ?- commonElements([[1, 2, 3], [1, _, 3], [1, 2, 3]], Result2).
+    Result2 = [1, _, 3].
+    
+    ?- commonElements([[_, _, _], ['X', 'X', 'X'], [_, _, _]], Result3).
+    Result3 = [_, _, _].
+
+    ?- commonElements([['#', _, '#'], [_, 'X', _], [_, _, 'X']], Result4).
+	Result4 = [_, _, _].
+
+    ?- commonElements([['#', 'X', '#'], ['#', 'X', '#'], ['#', 'X', '#']], Result5).
+    Result5 = ['#', 'X', '#'].
+
+    ?- commonElements([['#', 'X', '#'], ['#', _, '#'], ['#', 'X', '#']], Result6).
+    Result6 = ['#', _, '#'].
+
+    ?- commonElements([['#', 'X', '#'], [_, _, _], ['#', 'X', '#']], Result7).
+    Result7 = [_, _, _].
+**/
+commonElements(Lists, Result) :-
+	Lists = [First | _],
+	length(First, Len),
+	findall(Element,
+		(
+        	between(1, Len, Idx),
+			(sameElement(Lists, Idx, Element) -> true ; Element = _)
+    	),
+		Result).
+
+/******************************************************************************** 
+ * progressLine(+Line, +Clue, -AdvancedLine).
+ * 
+ * Succeeds if {AdvancedLine} contains the maximum information {"X" and "#"} it can represent with the
+ * initial state as {Line} and satisfies {Clues}, can contain anything else(_).
+ * 
+ * %%%%%%%%%%%% This predicate should fail if the initial state of the Line can not satisfy Clues.
+ *
+ * @param Line Line is a list which contains "#", "X" or anything else(_). Can be empty or already initialized e.g [_,_,"#"] or [_,_,_].
+ * @param Clue is a list of ints(>0) representing a Line,
+ * 			   such that every int is the amount of consecutive "#"s
+ * 			   followed or preceded by any amount of other elements(_).
+* @param AdvancedLine contains the maximum information {"X" and "#"} it can represent with the initial state as {Line} and {Clues}, can contain anything else(_).
+*/
+progressLine(Line, Clue, AdvancedLine) :-
+	findall(LineSolved, solveLine(Line, Clue, LineSolved), LinesPermutations),
+	commonElements(LinesPermutations, AdvancedLine).
+
+/******************************************************************************** 
+ * progressGrid(+Grid, +RowsClues, +ColumnsClues, -AdvancedGrid).
+ * 
+ * Succeeds if {AdvancedGrid} is the result of applying progressLine/3 to every Row and Column of {Grid}
+ * with clues {RowsClues} and {ColumnClues} respectively.
+**/
+progressGrid(Grid, RowsClues, ColumnsClues, AdvancedGrid) :-
+		getAmountRows(Grid, AmountRows),
+		getAmountColumns(Grid, AmountColumns),
+		R is AmountRows-1,
+		C is AmountColumns-1,
+
+		% advance maximum possible with rows.
+		findall(AdvancedRow,
+			(
+				between(0, R, RowIdx),
+				getRow(Grid, RowIdx, Row),
+				getListElement(RowsClues, RowIdx, RowClue),
+				progressLine(Row, RowClue, AdvancedRow)
+			), AdvancedRows
+		),
+		AdvancedGrid = AdvancedRows,
+
+		% advance maximum possible with columns using already modified rows.
+		findall(AdvancedColumn,
+			(
+				between(0, C, ColumnIdx),
+				getColumn(AdvancedGrid, ColumnIdx, Column),
+				getListElement(ColumnsClues, ColumnIdx, ColumnClue),
+				progressLine(Column, ColumnClue, AdvancedColumn)
+			), AdvancedColumns
+		),
+
+		transpose(AdvancedColumns, TAdvancedColumns),
+		AdvancedGrid = TAdvancedColumns.
+
+/******************************************************************************** 
+ * maximumProgressGrid(+Grid, +RowsClues, +ColumnsClues, -AdvancedGrid).
+ * 
+ * Succeeds if {MaxAdvancedGrid} is the result of applying progressGrid/3 to {Grid}
+ * with data {RowsClues} and {ColumnsClues} up until no more progress can be reached.
+**/
+maximumProgressGrid(Grid, RowsClues, ColumnsClues, MaxAdvancedGrid) :-
+	progressGrid(Grid, RowsClues, ColumnsClues, AdvancedGrid),
+	(sameGridProgress(Grid, AdvancedGrid) -> MaxAdvancedGrid=AdvancedGrid ; maximumProgressGrid(AdvancedGrid, RowsClues, ColumnsClues, MaxAdvancedGrid)).
+
+% NumElements is the number of "#" and "X" found in Grid : list of lists.
+countGridElements(Grid, NumElements) :-
+	flatten(Grid, FlatGrid),
+	findall(E, (member(E, FlatGrid), (E=="#";E=="X")), SymbolList),
+	length(SymbolList, NumElements).
+
+sameGridProgress(Grid1, Grid2) :-
+	countGridElements(Grid1, N),
+	countGridElements(Grid2, N).
+
+containsVar(List) :- member(V, List), var(V). 
+
+/******************************************************************************** 
+ * incompletedRow(+Grid, -IncompletedRow).
+ * 
+ * Succeeds if any row in {Grid} contains a variable and
+ * {IncompletedRow} is the first row with a variable.
+ * 
+ * @param Grid is a list of lists.
+ * @param IncompletedRow is the first row with a variable (topleft to bottomright).
+**/
+incompletedRow([Row | _], Row) :- containsVar(Row), !.
+incompletedRow([_ | Rest], Row) :- incompletedRow(Rest, Row).
+
+
+/******************************************************************************** 
+ * completedGrid(+Grid).
+ * 
+ * Succeeds if there is no list in grid which contains a variable.
+ * 
+ * @param Grid is a list of lists.
+**/
+completedGrid(Grid) :- \+incompletedRow(Grid, _).
+
+getMostRestrictedRow([Row | _], 0, Row).
+	
+
+/******************************************************************************** 
+ * solveGrid(+Grid, +RowsClues, +ColumnsClues, -SolvedGrid).
+ * 
+ * Succeeds if {SolvedGrid} is a grid that satisfies {RowsClues} and {ColumnsClues}, and unifies with {Grid}.
+ * 
+**/
+solveGrid(Grid, RowsClues, ColumnsClues, SolvedGrid) :-
+	maximumProgressGrid(Grid, RowsClues, ColumnsClues, AdvancedGrid),
+	(
+		completedGrid(AdvancedGrid) -> SolvedGrid = AdvancedGrid ;
+		(
+			getMostRestrictedRow(AdvancedGrid, Idx, Row),
+			getListElement(RowsClues, Idx, RowClue),
+			solveLine(Row, RowClue, PossibleRow),
+			replace(Row, Idx, PossibleRow, AdvancedGrid, PossibleGrid),
+			solveGrid(PossibleGrid, RowsClues, ColumnsClues, SolvedGrid)
+		)
+	).
