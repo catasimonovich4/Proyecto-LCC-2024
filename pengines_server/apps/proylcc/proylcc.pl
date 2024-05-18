@@ -38,15 +38,8 @@ put(Content, [RowN, ColN], RowsClues, ColsClues, Grid, NewGrid, RowSat, ColSat):
 	(lineToClue(Column, ColClue) -> ColSat = 1; ColSat = 0).
 	
 
-/******************************************************************************** 
- * getListElement(+List, +Idx, -Element).
- * 
- * Succeeds if the {Idx} element of {List} is equal to {Element}.
-**/
-getListElement([X | _], 0, X) :- !.
-getListElement([_ | Xs], Idx, Element) :-
-	K is Idx-1,
-	getListElement(Xs, K, Element).
+
+getListElement(List, Idx, Element) :- nth0(Idx, List ,Element), !.
 
 getRow(Grid, RowIdx, Row) :- getListElement(Grid, RowIdx, Row).
 
@@ -183,7 +176,7 @@ clueToLine([ Count | Counts ], List) :-
  *
 **/
 solveLine(Line, Clue, LineSolved) :- 
-	LineSolved = Line,
+	copy_term(Line, LineSolved),
 	clueToLine(Clue, LineSolved).
 
 /******************************************************************************** 
@@ -269,29 +262,35 @@ progressGrid(Grid, RowsClues, ColumnsClues, AdvancedGrid) :-
 		R is AmountRows-1,
 		C is AmountColumns-1,
 
-		% advance maximum possible with rows.
-		findall(AdvancedRow,
-			(
-				between(0, R, RowIdx),
-				getRow(Grid, RowIdx, Row),
-				getListElement(RowsClues, RowIdx, RowClue),
-				progressLine(Row, RowClue, AdvancedRow)
-			), AdvancedRows
-		),
-		AdvancedGrid = AdvancedRows,
-
-		% advance maximum possible with columns using already modified rows.
+		% OBS:
+		% We first get column progress, since it is easier & faster to modify rows instead of columns.
+		% With the following supossition: "user will most likely change rows" then
+		% if we have a maximum progressed grid, and (given the supposition) modify a single row, 
+		% it is innecessary to check for progress in ROWS first since only one changed, instead columns first is better.
 		findall(AdvancedColumn,
 			(
 				between(0, C, ColumnIdx),
-				getColumn(AdvancedGrid, ColumnIdx, Column),
+				getColumn(Grid, ColumnIdx, Column),
 				getListElement(ColumnsClues, ColumnIdx, ColumnClue),
 				progressLine(Column, ColumnClue, AdvancedColumn)
 			), AdvancedColumns
 		),
 
 		transpose(AdvancedColumns, TAdvancedColumns),
-		AdvancedGrid = TAdvancedColumns.
+		AdvancedGrid = TAdvancedColumns,
+
+		% advance maximum possible with rows using already modified columns.
+		findall(AdvancedRow,
+			(
+				between(0, R, RowIdx),
+				getRow(AdvancedGrid, RowIdx, Row),
+				getListElement(RowsClues, RowIdx, RowClue),
+				progressLine(Row, RowClue, AdvancedRow)
+			), AdvancedRows
+		),
+		AdvancedGrid = AdvancedRows.
+
+
 
 /******************************************************************************** 
  * maximumProgressGrid(+Grid, +RowsClues, +ColumnsClues, -AdvancedGrid).
@@ -303,12 +302,31 @@ maximumProgressGrid(Grid, RowsClues, ColumnsClues, MaxAdvancedGrid) :-
 	progressGrid(Grid, RowsClues, ColumnsClues, AdvancedGrid),
 	(sameGridProgress(Grid, AdvancedGrid) -> MaxAdvancedGrid=AdvancedGrid ; maximumProgressGrid(AdvancedGrid, RowsClues, ColumnsClues, MaxAdvancedGrid)).
 
-% NumElements is the number of "#" and "X" found in Grid : list of lists.
+/******************************************************************************** 
+ * countElements(+List, +Element, -Count).
+ * 
+ * Succeeds if {Count} is the amount of ocurrences of {Element} in {List}.
+**/
+countElements([], _, 0).
+countElements([X | Xs], E, Count) :-
+	X==E -> (countElements(Xs, E, K), Count is K+1) ; countElements(Xs, E, Count).
+
+/******************************************************************************** 
+ * countGridElements(+Grid :list of lists, -NumElements :int).
+ * 
+ * Succeeds if {NumElements} is the number of "#" and "X" found in {Grid} .
+**/
 countGridElements(Grid, NumElements) :-
 	flatten(Grid, FlatGrid),
-	findall(E, (member(E, FlatGrid), (E=="#";E=="X")), SymbolList),
-	length(SymbolList, NumElements).
+	countElements(FlatGrid, "#", H),
+	countElements(FlatGrid, "X", X),
+	NumElements is H + X.
 
+/******************************************************************************** 
+ * sameGridProgress(+Grid1, +Grid2).
+ * 
+ * Succeeds if the amount of "#" and "X" is the same for {Grid1} and {Grid2} .
+**/
 sameGridProgress(Grid1, Grid2) :-
 	countGridElements(Grid1, N),
 	countGridElements(Grid2, N).
@@ -337,8 +355,27 @@ incompletedRow([_ | Rest], Row) :- incompletedRow(Rest, Row).
 **/
 completedGrid(Grid) :- \+incompletedRow(Grid, _).
 
-getMostRestrictedRow([Row | _], 0, Row).
-	
+/******************************************************************************** 
+ * getMostRestrictedRow(+Grid :list, -Idx :int, -Row :list).
+ * 
+ * Succeeds if {Row} has the maximum number of "#" and "X" (most restricted) yet not completed (contains _),
+ * and {Idx} is the index of {Row} in {Grid} starting from 0.
+ * If more than 1 row satisfies, {Row} is the first one.
+**/
+getMostRestrictedRow(Grid, Idx, Row) :-
+	findall( RowElementCount,
+		(
+			member(R, Grid),
+			countElements(R, "#", H),
+			countElements(R, "X", X),
+			(containsVar(R) -> RowElementCount is H+X ; RowElementCount = -1) % completed? non selectable.
+		),
+		RowsElementCounts
+	),
+	max_list(RowsElementCounts, Max),
+	getListElement(RowsElementCounts, Idx, Max), % obtain Idx.
+	getListElement(Grid, Idx, Row). % obtain Row.
+
 
 /******************************************************************************** 
  * solveGrid(+Grid, +RowsClues, +ColumnsClues, -SolvedGrid).
@@ -349,6 +386,8 @@ getMostRestrictedRow([Row | _], 0, Row).
 solveGrid(Grid, RowsClues, ColumnsClues, SolvedGrid) :-
 	maximumProgressGrid(Grid, RowsClues, ColumnsClues, AdvancedGrid),
 	(
+		% can be optimized, instead of checking completeGrid
+		% just getMostRestrictedRow and check it does not contain VARIABLE.
 		completedGrid(AdvancedGrid) -> SolvedGrid = AdvancedGrid ;
 		(
 			getMostRestrictedRow(AdvancedGrid, Idx, Row),
