@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import PengineClient from './PengineClient';
 import Board from './Board';
+import SliderButton from './SliderButton';
 import Button from './Button';
 
 let pengine;
@@ -8,6 +9,7 @@ let pengine;
 function Game() {
 
   // State
+  const [solvedGrid, setSolvedGrid] = useState(null);
   const [grid, setGrid] = useState(null);
   const [rowsClues, setRowsClues] = useState(null);
   const [colsClues, setColsClues] = useState(null);
@@ -16,13 +18,15 @@ function Game() {
   
   const [isMouseDown, setIsMouseDown] = useState(false);
   
-  
   const visitedSquaresRef = useRef(new Set());
+  const gridPlaceholder = useRef(null);
   
   const [rowsCluesStates, setRowsCluesStates] = useState(null);
   const [colsCluesStates, setColsCluesStates] = useState(null);
   
   const [userWon, setUserWon] = useState(false);
+  const [showSolution, setShowSolution] = useState(true);
+  const [canPlay, setCanPlay] = useState(false);
   
   useEffect(() => {
     // Creation of the pengine server instance.    
@@ -33,16 +37,21 @@ function Game() {
   
   function handleServerReady(instance) {
     pengine = instance;
-    const queryS = 'init(RowClues, ColumnClues, Grid), getClueStates(Grid, RowClues, ColumnClues, RowsCluesStates, ColumnsCluesStates)';
+    const queryS = "init(RowClues, ColumnClues, Grid), " +
+    "getClueStates(Grid, RowClues, ColumnClues, RowsCluesStates, ColumnsCluesStates), " +
+    "solveGrid(Grid, RowClues, ColumnClues, SolvedGrid)";
     
     pengine.query(queryS, (success, response) => {
       if (success) {
+        gridPlaceholder.current = response['Grid'];
         setGrid(response['Grid']);
         setRowsClues(response['RowClues']);
         setColsClues(response['ColumnClues']);
         setRowsCluesStates(response['RowsCluesStates']);
         setColsCluesStates(response['ColumnsCluesStates']);
         setUserWon(response['RowsCluesStates'].every( (e) => e===1 ) && response['ColumnsCluesStates'].every( (e) => e===1 ));
+        setSolvedGrid(response['SolvedGrid']);
+        setCanPlay(true);
       }
     });
   }
@@ -51,8 +60,8 @@ function Game() {
   function getDrawState() { return drawState ? 'X' : '#' }
 
   function updateSquare(content, row, column) {
-    // No action on click if we are waiting.
-    if (waiting) { return; }
+    // No action on click if we are waiting or user can not play.
+    if (waiting || !canPlay) { return; }
     
     // Build Prolog query to make a move and get the new satisfacion status of the relevant clues.    
     const squaresS = JSON.stringify(grid).replaceAll('"_"', '_'); // Remove quotes for variables. squares = [["X",_,_,_,_],["X",_,"X",_,_],["X",_,_,_,_],["#","#","#",_,_],[_,_,"#","#","#"]]
@@ -123,9 +132,20 @@ function Game() {
   
   function handleRightClick(e) { e.preventDefault(); }
   
-  if (!grid) {
-    return null;
+  function peekSolution() {
+    if (showSolution) {
+      gridPlaceholder.current = grid;
+      setGrid(solvedGrid);
+      setCanPlay(false);
+    } else {
+      setGrid(gridPlaceholder.current);
+      setCanPlay(true);
+    }
+    setShowSolution(!showSolution); 
   }
+  
+  
+  if (!grid) { return null; }
 
   const statusText = userWon ? "YOU WON!" : "Keep playing!";
   return (
@@ -142,12 +162,18 @@ function Game() {
         onMouseEnter={handleMouseEnter}
         onContextMenu={handleRightClick}
       />
+      
       <div className="game-info">
         {statusText}
       </div>
+
+      <Button onClick={() => {}}>Revelar Celda</Button>
+      <Button onClick={peekSolution}>Mostrar Solucion</Button>
+
       <div className="switch-button">
-        <Button currentState={drawState} onClick={() => setDrawState(!drawState)}></Button>
+        <SliderButton currentState={drawState} onClick={() => setDrawState(!drawState)}></SliderButton>
       </div>
+
     </div>
   );
 }

@@ -1,4 +1,4 @@
-:- module(proylcc, [put/8, getClueStates/5]).
+:- module(proylcc, [put/8, getClueStates/5, solveGrid/4]).
 :- use_module(library(lists)).
 :- use_module(library(clpfd)).
 
@@ -266,7 +266,10 @@ progressGrid(Grid, RowsClues, ColumnsClues, AdvancedGrid) :-
 		% We first get column progress, since it is easier & faster to modify rows instead of columns.
 		% With the following supossition: "user will most likely change rows" then
 		% if we have a maximum progressed grid, and (given the supposition) modify a single row, 
-		% it is innecessary to check for progress in ROWS first since only one changed, instead columns first is better.
+		% it is unnecessary to check for progress in ROWS first since only one changed,
+		% instead this row will affect almost all columns.
+
+		% advance maximum possible with columns.
 		findall(AdvancedColumn,
 			(
 				between(0, C, ColumnIdx),
@@ -277,7 +280,7 @@ progressGrid(Grid, RowsClues, ColumnsClues, AdvancedGrid) :-
 		),
 
 		transpose(AdvancedColumns, TAdvancedColumns),
-		AdvancedGrid = TAdvancedColumns,
+		AdvancedGrid = TAdvancedColumns, % this unification does not modify {Grid} because of findall.
 
 		% advance maximum possible with rows using already modified columns.
 		findall(AdvancedRow,
@@ -288,7 +291,7 @@ progressGrid(Grid, RowsClues, ColumnsClues, AdvancedGrid) :-
 				progressLine(Row, RowClue, AdvancedRow)
 			), AdvancedRows
 		),
-		AdvancedGrid = AdvancedRows.
+		AdvancedGrid = AdvancedRows. % this unification does not modify {Grid} because of findall.
 
 
 
