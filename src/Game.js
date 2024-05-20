@@ -180,7 +180,7 @@ function Game() {
         {statusText}
       </div>
 
-      <Button onClick={() => {setNextClickHint(true);}}>Revelar Celda</Button>
+      <Button onClick={() => {setNextClickHint(!nextClickHint);}}>Revelar Celda</Button>
       <Button onClick={peekSolution}>Mostrar Solucion</Button>
 
       <div className="switch-button">
