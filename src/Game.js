@@ -66,6 +66,10 @@ function Game() {
 
     if (nextClickHint) {
       setNextClickHint(false);
+
+      // if already correct do not modify.
+      if (grid[row][column] === solvedGrid[row][column]) { return; }
+
       content = solvedGrid[row][column];
     } 
     // Build Prolog query to make a move and get the new satisfacion status of the relevant clues.    
@@ -155,6 +159,7 @@ function Game() {
   if (!grid) { return null; }
 
   const statusText = userWon ? "YOU WON!" : "Keep playing!";
+  const cursorModifier = nextClickHint ? " custom-cursor" : "";
   return (
     <div className="game">
       <h1>Nonograma</h1>
@@ -164,7 +169,7 @@ function Game() {
         colsClues={colsClues}
         rowsCluesStates={rowsCluesStates}
         colsCluesStates={colsCluesStates}
-        cursorModifier={nextClickHint ? " custom-cursor" : "" }
+        cursorModifier={cursorModifier}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseEnter={handleMouseEnter}
