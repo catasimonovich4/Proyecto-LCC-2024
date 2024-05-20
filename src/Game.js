@@ -150,7 +150,7 @@ function Game() {
       setCanPlay(false);
     } else {
       setGrid(gridPlaceholder.current);
-      setCanPlay(true);
+      setCanPlay(!userWon);
     }
     setShowSolution(!showSolution); 
   }
@@ -159,7 +159,7 @@ function Game() {
   if (!grid) { return null; }
 
   const statusText = userWon ? "YOU WON!" : "Keep playing!";
-  const cursorModifier = nextClickHint ? " custom-cursor" : "";
+  const cursorModifier = (nextClickHint && !userWon) ? " custom-cursor" : "";
   return (
     <div className="game">
       <h1>Nonograma</h1>
