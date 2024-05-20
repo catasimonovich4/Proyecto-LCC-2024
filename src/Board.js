@@ -2,7 +2,7 @@ import React from 'react';
 import Square from './Square';
 import Clue from './Clue';
 
-function Board({ grid, rowsClues, colsClues, rowsCluesStates, colsCluesStates, onMouseDown, onMouseUp, onMouseEnter, onContextMenu }) {
+function Board({ grid, rowsClues, colsClues, rowsCluesStates, colsCluesStates, cursorModifier, onMouseDown, onMouseUp, onMouseEnter, onContextMenu }) {
     const numOfRows = grid.length;
     const numOfCols = grid[0].length;
 
@@ -56,6 +56,7 @@ function Board({ grid, rowsClues, colsClues, rowsCluesStates, colsCluesStates, o
                     {grid.map((row, i) =>
                         row.map((cell, j) =>
                             <Square
+                                cursorModifier={cursorModifier}
                                 stateValue={cell}
                                 onMouseDown={(e) => onMouseDown(e, i, j)}
                                 onMouseUp={onMouseUp}

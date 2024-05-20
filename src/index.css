@@ -160,3 +160,7 @@ h1 {
 .checkbox-wrapper-22 .slider.round:before {
   border-radius: 50%;
 }
+
+.custom-cursor {
+  cursor: url(./LightCursor.cur), crosshair;
+}

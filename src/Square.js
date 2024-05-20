@@ -1,8 +1,8 @@
 import React from 'react';
 
-function Square({ stateValue, onMouseDown, onMouseUp, onMouseEnter, onContextMenu }) {
+function Square({ cursorModifier, stateValue, onMouseDown, onMouseUp, onMouseEnter, onContextMenu }) {
     let stateModifier = stateValue === '#' ? " square-painted" : stateValue==='X' ? " square-cross" : "";
-    const className = "square" + stateModifier;
+    const className = "square" + stateModifier + cursorModifier;
     
     return (
         <button className={className}

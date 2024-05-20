@@ -27,6 +27,7 @@ function Game() {
   const [userWon, setUserWon] = useState(false);
   const [showSolution, setShowSolution] = useState(true);
   const [canPlay, setCanPlay] = useState(false);
+  const [nextClickHint, setNextClickHint] = useState(false);
   
   useEffect(() => {
     // Creation of the pengine server instance.    
@@ -62,7 +63,11 @@ function Game() {
   function updateSquare(content, row, column) {
     // No action on click if we are waiting or user can not play.
     if (waiting || !canPlay) { return; }
-    
+
+    if (nextClickHint) {
+      setNextClickHint(false);
+      content = solvedGrid[row][column];
+    } 
     // Build Prolog query to make a move and get the new satisfacion status of the relevant clues.    
     const squaresS = JSON.stringify(grid).replaceAll('"_"', '_'); // Remove quotes for variables. squares = [["X",_,_,_,_],["X",_,"X",_,_],["X",_,_,_,_],["#","#","#",_,_],[_,_,"#","#","#"]]
     const rowsCluesS = JSON.stringify(rowsClues);
@@ -88,8 +93,10 @@ function Game() {
         }
 
         let tempWon = rowClues.every( (e) => e===1 ) && columnClues.every( (e) => e===1 );
-        if (userWon !== tempWon)
-          setUserWon(tempWon);
+        if (tempWon) {
+            setCanPlay(false);
+            setUserWon(true);
+        }
       }
 
       setWaiting(false);
@@ -157,17 +164,18 @@ function Game() {
         colsClues={colsClues}
         rowsCluesStates={rowsCluesStates}
         colsCluesStates={colsCluesStates}
+        cursorModifier={nextClickHint ? " custom-cursor" : "" }
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseEnter={handleMouseEnter}
         onContextMenu={handleRightClick}
-      />
+        />
       
       <div className="game-info">
         {statusText}
       </div>
 
-      <Button onClick={() => {}}>Revelar Celda</Button>
+      <Button onClick={() => {setNextClickHint(true);}}>Revelar Celda</Button>
       <Button onClick={peekSolution}>Mostrar Solucion</Button>
 
       <div className="switch-button">
