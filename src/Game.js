@@ -35,6 +35,8 @@ function Game() {
     // The callback will run when the server is ready, and it stores the pengine instance in the pengine variable. 
     PengineClient.init(handleServerReady);
   }, []);
+
+  function gameWon(rows, cols) { return rows.every( (e) => e===1 ) && cols.every( (e) => e===1 ); }
   
   function handleServerReady(instance) {
     pengine = instance;
@@ -50,9 +52,10 @@ function Game() {
         setColsClues(response['ColumnClues']);
         setRowsCluesStates(response['RowsCluesStates']);
         setColsCluesStates(response['ColumnsCluesStates']);
-        setUserWon(response['RowsCluesStates'].every( (e) => e===1 ) && response['ColumnsCluesStates'].every( (e) => e===1 ));
+        let won = gameWon(response['RowsCluesStates'], response['ColumnsCluesStates']);
+        setUserWon(won);
+        setCanPlay(!won);
         setSolvedGrid(response['SolvedGrid']);
-        setCanPlay(true);
       }
     });
   }
@@ -96,7 +99,7 @@ function Game() {
           setColsCluesStates(columnClues);
         }
 
-        let tempWon = rowClues.every( (e) => e===1 ) && columnClues.every( (e) => e===1 );
+        let tempWon = gameWon(rowClues, columnClues);
         if (tempWon) {
             setCanPlay(false);
             setUserWon(true);
