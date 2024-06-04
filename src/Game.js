@@ -183,12 +183,14 @@ function Game() {
         {statusText}
       </div>
 
-      <Button onClick={() => {setNextClickHint(!nextClickHint);}}>Revelar Celda</Button>
-      <Button onClick={peekSolution}>Mostrar Solucion</Button>
-
-      <div className="switch-button">
-        <SliderButton currentState={drawState} onClick={() => setDrawState(!drawState)}></SliderButton>
+      <div className='buttons'>
+        <Button onClick={() => {setNextClickHint(!nextClickHint);}}>Revelar Celda</Button>
+        <Button onClick={peekSolution}>Mostrar Solucion</Button>
+        <div className="switch-button">
+          <SliderButton currentState={drawState} onClick={() => setDrawState(!drawState)}></SliderButton>
+        </div>
       </div>
+      
 
     </div>
   );
