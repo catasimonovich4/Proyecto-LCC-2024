@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import PengineClient from './PengineClient';
 import Board from './Board';
 import SliderButton from './SliderButton';
+import ToggleButton from './ToggleButton';
 import Button from './Button';
 
 let pengine;
@@ -185,7 +186,7 @@ function Game() {
 
       <div className='buttons'>
         <Button onClick={() => {setNextClickHint(!nextClickHint);}}>Revelar Celda</Button>
-        <Button onClick={peekSolution}>Mostrar Solucion</Button>
+        <ToggleButton onClick={peekSolution}>Mostrar Solucion</ToggleButton>
         <div className="switch-button">
           <SliderButton currentState={drawState} onClick={() => setDrawState(!drawState)}></SliderButton>
         </div>

@@ -230,3 +230,15 @@ h1 {
   background-color: #212121; /* Color cuando el botón está activado */
   color: white;
 }
+
+/* Estilo cuando el botón está activado */
+.active-show-solution {
+  background-color: #212121; /* Color cuando el botón está activado */
+  color: white;
+}
+
+/* Estilo cuando el botón está inactivo */
+.inactive-show-solution {
+  background-color: #fff; /* Color cuando el botón está inactivo */
+  color: #212121;
+}
