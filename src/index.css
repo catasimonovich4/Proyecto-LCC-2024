@@ -231,6 +231,12 @@ h1 {
   color: white;
 }
 
+.buttonactive {
+  transform: translateY(.125rem);
+  background-color: #f2f200; /* Color cuando el botón está activado */
+  color: white;
+}
+
 /* Estilo cuando el botón está activado */
 .active-show-solution {
   background-color: #212121; /* Color cuando el botón está activado */

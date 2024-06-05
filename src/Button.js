@@ -1,7 +1,8 @@
 
-function Button({ onClick, children }) {
+function Button({ onClick, state, children }) {
+    let _className = state ? "button-80" : "button-80 buttonactive"
     return (
-        <button className="button-80" type="button" role="button" onClick={onClick}>{children}</button>
+        <button className={_className} type="button" role="button" onClick={onClick}>{children}</button>
      ); 
 }
 
