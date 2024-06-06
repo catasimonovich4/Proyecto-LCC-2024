@@ -234,7 +234,7 @@ h1 {
 .buttonactive {
   transform: translateY(.125rem);
   background-color: #f2f200; /* Color cuando el botón está activado */
-  color: white;
+  color: #212121;
 }
 
 /* Estilo cuando el botón está activado */
