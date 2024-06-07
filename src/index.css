@@ -225,12 +225,6 @@ h1 {
   border-width: 0;
 }
 
-.button-80:not(:disabled):active {
-  transform: translateY(.125rem);
-  background-color: #212121; /* Color cuando el botón está activado */
-  color: white;
-}
-
 .buttonactive {
   transform: translateY(.125rem);
   background-color: #f2f200; /* Color cuando el botón está activado */
